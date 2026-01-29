@@ -1,2 +1,4 @@
-bin/
-*.class
+.settings/
+backup_local/
+logs/
+*.log
