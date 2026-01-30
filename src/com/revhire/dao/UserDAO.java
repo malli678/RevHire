@@ -2,65 +2,66 @@ package com.revhire.dao;
 
 import com.revhire.model.User;
 import com.revhire.util.DBUtil;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class UserDAO {
-    
+
+    /* ===================== REGISTER USER ===================== */
+
     public int registerUser(User user) throws SQLException {
-        String sql = "INSERT INTO users (id, email, password, role, name, phone, location) VALUES (user_seq.NEXTVAL, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (id, email, password, role, name, phone, location) " +
+                     "VALUES (user_seq.NEXTVAL, ?, ?, ?, ?, ?, ?)";
+
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             conn = DBUtil.getConnection();
             ps = conn.prepareStatement(sql, new String[]{"id"});
-            
+
             ps.setString(1, user.getEmail());
             ps.setString(2, user.getPassword());
             ps.setString(3, user.getRole());
             ps.setString(4, user.getName());
             ps.setString(5, user.getPhone());
             ps.setString(6, user.getLocation());
-            
-            int affectedRows = ps.executeUpdate();
-            
-            if (affectedRows > 0) {
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
                 rs = ps.getGeneratedKeys();
                 if (rs.next()) {
                     return rs.getInt(1);
                 }
             }
             return -1;
+
         } finally {
-            if (rs != null) {
-                try { rs.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (ps != null) {
-                try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
+            closeResources(rs, ps, conn);
         }
     }
-    
+
+    /* ===================== LOGIN USER ===================== */
+
     public User loginUser(String email, String password) throws SQLException {
         String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             conn = DBUtil.getConnection();
             ps = conn.prepareStatement(sql);
-            
+
             ps.setString(1, email);
             ps.setString(2, password);
+
             rs = ps.executeQuery();
-            
             if (rs.next()) {
                 User user = new User();
                 user.setId(rs.getInt("id"));
@@ -73,57 +74,74 @@ public class UserDAO {
                 user.setCreatedAt(rs.getDate("created_at"));
                 return user;
             }
+
         } finally {
-            if (rs != null) {
-                try { rs.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (ps != null) {
-                try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
+            closeResources(rs, ps, conn);
         }
         return null;
     }
-    
+
+    /* ===================== UPDATE PROFILE ===================== */
+
     public boolean updateUser(User user) throws SQLException {
         String sql = "UPDATE users SET name = ?, phone = ?, location = ? WHERE id = ?";
+
         Connection conn = null;
         PreparedStatement ps = null;
-        
+
         try {
             conn = DBUtil.getConnection();
             ps = conn.prepareStatement(sql);
-            
+
             ps.setString(1, user.getName());
             ps.setString(2, user.getPhone());
             ps.setString(3, user.getLocation());
             ps.setInt(4, user.getId());
-            
+
             return ps.executeUpdate() > 0;
+
         } finally {
-            if (ps != null) {
-                try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
+            closeResources(null, ps, conn);
         }
     }
-    
+
+    /* ===================== UPDATE PASSWORD ===================== */
+
+    public boolean updatePassword(int userId, String newPassword) throws SQLException {
+        String sql = "UPDATE users SET password = ? WHERE id = ?";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            ps = conn.prepareStatement(sql);
+
+            ps.setString(1, newPassword);
+            ps.setInt(2, userId);
+
+            return ps.executeUpdate() > 0;
+
+        } finally {
+            closeResources(null, ps, conn);
+        }
+    }
+
+    /* ===================== GET USER BY ID ===================== */
+
     public User getUserById(int userId) throws SQLException {
         String sql = "SELECT * FROM users WHERE id = ?";
+
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             conn = DBUtil.getConnection();
             ps = conn.prepareStatement(sql);
             ps.setInt(1, userId);
+
             rs = ps.executeQuery();
-            
             if (rs.next()) {
                 User user = new User();
                 user.setId(rs.getInt("id"));
@@ -136,43 +154,80 @@ public class UserDAO {
                 user.setCreatedAt(rs.getDate("created_at"));
                 return user;
             }
+
         } finally {
-            if (rs != null) {
-                try { rs.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (ps != null) {
-                try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
+            closeResources(rs, ps, conn);
         }
         return null;
     }
-    
-    public boolean emailExists(String email) throws SQLException {
-        String sql = "SELECT 1 FROM users WHERE email = ?";
+
+    /* ===================== GET USER BY EMAIL ===================== */
+
+    public User getUserByEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM users WHERE email = ?";
+
         Connection conn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
-        
+
         try {
             conn = DBUtil.getConnection();
             ps = conn.prepareStatement(sql);
             ps.setString(1, email);
+
             rs = ps.executeQuery();
-            
-            return rs.next();
+            if (rs.next()) {
+                User user = new User();
+                user.setId(rs.getInt("id"));
+                user.setEmail(rs.getString("email"));
+                user.setPassword(rs.getString("password"));
+                user.setRole(rs.getString("role"));
+                user.setName(rs.getString("name"));
+                user.setPhone(rs.getString("phone"));
+                user.setLocation(rs.getString("location"));
+                user.setCreatedAt(rs.getDate("created_at"));
+                return user;
+            }
+
         } finally {
-            if (rs != null) {
-                try { rs.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (ps != null) {
-                try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
-            if (conn != null) {
-                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
-            }
+            closeResources(rs, ps, conn);
+        }
+        return null;
+    }
+
+    /* ===================== CHECK EMAIL EXISTS ===================== */
+
+    public boolean emailExists(String email) throws SQLException {
+        String sql = "SELECT 1 FROM users WHERE email = ?";
+
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DBUtil.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, email);
+
+            rs = ps.executeQuery();
+            return rs.next();
+
+        } finally {
+            closeResources(rs, ps, conn);
+        }
+    }
+
+    /* ===================== RESOURCE CLEANUP ===================== */
+
+    private void closeResources(ResultSet rs, PreparedStatement ps, Connection conn) {
+        if (rs != null) {
+            try { rs.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+        if (ps != null) {
+            try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
+        }
+        if (conn != null) {
+            try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
         }
     }
 }
