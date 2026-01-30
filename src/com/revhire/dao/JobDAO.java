@@ -280,5 +280,57 @@ public class JobDAO {
         }
     }
     
- 
+    public boolean updateJob(Job job) throws SQLException {
+        String sql = "UPDATE jobs SET title = ?, description = ?, skills = ?, experience_years = ?, " +
+                     "education = ?, location = ?, salary_min = ?, salary_max = ?, job_type = ?, " +
+                     "deadline = ?, status = ? WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        
+        try {
+            conn = DBUtil.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setString(1, job.getTitle());
+            ps.setString(2, job.getDescription());
+            ps.setString(3, job.getSkills());
+            ps.setInt(4, job.getExperienceYears());
+            ps.setString(5, job.getEducation());
+            ps.setString(6, job.getLocation());
+            ps.setDouble(7, job.getSalaryMin());
+            ps.setDouble(8, job.getSalaryMax());
+            ps.setString(9, job.getJobType());
+            ps.setDate(10, new java.sql.Date(job.getDeadline().getTime()));
+            ps.setString(11, job.getStatus());
+            ps.setInt(12, job.getId());
+            
+            return ps.executeUpdate() > 0;
+        } finally {
+        	if (ps != null) {
+                try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+            if (conn != null) {
+                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+        }
+    }
+
+    public boolean deleteJob(int jobId) throws SQLException {
+        String sql = "DELETE FROM jobs WHERE id = ?";
+        Connection conn = null;
+        PreparedStatement ps = null;
+        
+        try {
+            conn = DBUtil.getConnection();
+            ps = conn.prepareStatement(sql);
+            ps.setInt(1, jobId);
+            return ps.executeUpdate() > 0;
+        } finally {
+        	if (ps != null) {
+                try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+            if (conn != null) {
+                try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+        }
+    }
 }
