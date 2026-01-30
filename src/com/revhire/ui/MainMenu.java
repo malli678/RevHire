@@ -116,12 +116,33 @@ public class MainMenu {
     private void forgotPassword() {
         ConsoleUtils.printHeader("Forgot Password Recovery");
         
+        System.out.println("Recover password for:");
+        System.out.println("1. Job Seeker Account");
+        System.out.println("2. Employer Account");
+        ConsoleUtils.printLine(60);
+        
+        int roleChoice = ConsoleUtils.readInt("Enter your choice: ");
+        String expectedRole = (roleChoice == 1) ? "jobseeker" : "employer";
+        
+        System.out.println("\nSelected: " + (roleChoice == 1 ? "Job Seeker" : "Employer") + " Account");
+        ConsoleUtils.printLine(60);
+        
         String email = ConsoleUtils.readEmail("Enter your registered email: ");
         
         try {
             User user = authService.getUserByEmail(email);
             if (user == null) {
-                System.out.println("Email not found in our system.");
+                System.out.println("\n>> ERROR: Email not found in our system.");
+                ConsoleUtils.pressEnterToContinue();
+                return;
+            }
+            
+            // Check if user role matches selected role
+            if (!expectedRole.equals(user.getRole())) {
+                System.out.println("\n>> ERROR: This email is registered as a " + 
+                                 user.getRole().toUpperCase() + ", not as a " + 
+                                 expectedRole.toUpperCase() + "!");
+                System.out.println(">> Please select the correct account type.");
                 ConsoleUtils.pressEnterToContinue();
                 return;
             }
@@ -131,17 +152,18 @@ public class MainMenu {
             
             if (authService.verifySecurityAnswer(user.getId(), answer)) {
                 String tempPassword = authService.generateTemporaryPassword();
-                System.out.println("\nTemporary Password: " + tempPassword);
-                System.out.println("Please use this to login and change your password immediately.");
+                System.out.println("\n>> SUCCESS: Password reset initiated!");
+                System.out.println(">> Temporary Password: " + tempPassword);
+                System.out.println(">> Please use this to login and change your password immediately.");
                 
                 // Reset password with temporary password
                 authService.resetPassword(user.getId(), tempPassword);
-                System.out.println("Password has been reset. Check your email for the temporary password.");
+                System.out.println("\n>> NOTE: In a real system, this temporary password would be sent to your email.");
             } else {
-                System.out.println("Security answer incorrect. Password reset failed.");
+                System.out.println("\n>> ERROR: Security answer incorrect. Password reset failed.");
             }
         } catch (SQLException e) {
-            System.out.println("Error: " + e.getMessage());
+            System.out.println("\n>> ERROR: " + e.getMessage());
         }
         ConsoleUtils.pressEnterToContinue();
     }
@@ -149,12 +171,35 @@ public class MainMenu {
     private void login() {
         ConsoleUtils.printHeader("Login");
         
+        System.out.println("Login as:");
+        System.out.println("1. Job Seeker");
+        System.out.println("2. Employer");
+        ConsoleUtils.printLine(60);
+        
+        int roleChoice = ConsoleUtils.readInt("Enter your choice: ");
+        String expectedRole = (roleChoice == 1) ? "jobseeker" : "employer";
+        
+        System.out.println("\nSelected Role: " + (roleChoice == 1 ? "Job Seeker" : "Employer"));
+        ConsoleUtils.printLine(60);
+        
         String email = ConsoleUtils.readEmail("Email: ");
-        String password = ConsoleUtils.readString("Password: ");
-
+        String password = ConsoleUtils.readPassword("Password: ");
+        
+        System.out.println("\nAuthenticating user...");
+        
         try {
             User user = authService.login(email, password);
             if (user != null) {
+                // Check if user role matches selected role
+                if (!expectedRole.equals(user.getRole())) {
+                    System.out.println("\nError: You are registered as a " + 
+                                     user.getRole().toUpperCase() + ", not as a " + 
+                                     expectedRole.toUpperCase() + "!");
+                    System.out.println("Please select the correct login option.");
+                    ConsoleUtils.pressEnterToContinue();
+                    return;
+                }
+                
                 System.out.println("\nLogin successful! Welcome, " + user.getName());
                 ConsoleUtils.pressEnterToContinue();
                 
