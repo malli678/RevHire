@@ -5,6 +5,11 @@ import com.revhire.model.*;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 public class EmployerService {
 	private EmployerDAO employerDAO = new EmployerDAO();
@@ -117,16 +122,65 @@ public class EmployerService {
 	// BULK ACTION: Update multiple applications at once
 	public boolean bulkUpdateApplications(List<Integer> applicationIds,
 			String status, String reason) throws SQLException {
+		return applicationDAO.bulkUpdateApplications(applicationIds, status, reason);
+	}
 
-		if (applicationIds == null || applicationIds.isEmpty()) {
-			return false;
-		}
+	// NEW: Search applications with filters
+	public List<Application> searchApplications(int employerId, Map<String, Object> filters) throws SQLException {
+		return applicationDAO.searchApplicationsWithFilters(employerId, filters);
+	}
 
-		for (int appId : applicationIds) {
-			applicationDAO.updateApplicationStatus(appId, status, reason);
-		}
+	// NEW: Add comments to application
+	public boolean addApplicationComment(int applicationId, String comments, String status) throws SQLException {
+		return applicationDAO.updateApplicationWithComments(applicationId, status, comments);
+	}
 
-		return true;
+	// Helper method to create filter map from parameters (Java 6/7 compatible)
+	public Map<String, Object> createFilterMap(String status, Integer minExperience, Integer maxExperience, 
+	                                          String skills, String education, String fromDateStr, 
+	                                          String toDateStr, String location, String sortBy) throws ParseException {
+	    
+	    Map<String, Object> filters = new HashMap<String, Object>();
+	    
+	    if (status != null && !status.isEmpty()) {
+	        filters.put("status", status);
+	    }
+	    
+	    if (minExperience != null) {
+	        filters.put("minExperience", minExperience);
+	    }
+	    
+	    if (maxExperience != null) {
+	        filters.put("maxExperience", maxExperience);
+	    }
+	    
+	    if (skills != null && !skills.isEmpty()) {
+	        filters.put("skills", skills);
+	    }
+	    
+	    if (education != null && !education.isEmpty()) {
+	        filters.put("education", education);
+	    }
+	    
+	    if (fromDateStr != null && !fromDateStr.isEmpty()) {
+	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	        filters.put("fromDate", sdf.parse(fromDateStr));
+	    }
+	    
+	    if (toDateStr != null && !toDateStr.isEmpty()) {
+	        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+	        filters.put("toDate", sdf.parse(toDateStr));
+	    }
+	    
+	    if (location != null && !location.isEmpty()) {
+	        filters.put("location", location);
+	    }
+	    
+	    if (sortBy != null && !sortBy.isEmpty()) {
+	        filters.put("sortBy", sortBy);
+	    }
+	    
+	    return filters;
 	}
 
 	public List<Job> searchJobsByEmployer(int employerId, String keyword)
@@ -137,7 +191,7 @@ public class EmployerService {
 		}
 
 		String lowerKeyword = keyword.toLowerCase();
-		List<Job> filteredJobs = new java.util.ArrayList<Job>();
+		List<Job> filteredJobs = new ArrayList<Job>();
 		for (Job job : allJobs) {
 			if (job.getTitle().toLowerCase().contains(lowerKeyword)
 					|| job.getDescription().toLowerCase()
