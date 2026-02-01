@@ -101,7 +101,8 @@ RevHire/
 │   └── com.revhire.test/           # JUnit Tests
 │       ├── PasswordUtilTest.java   # Password utility tests
 │       ├── UserDAOTest.java        # User DAO tests
-│       └── AuthServiceTest.java    # Authentication service tests
+│       ├── AuthServiceTest.java    # Authentication service tests
+│       ├── ConsoleUtilsTest.java   # Console utility tests
 │       └── NotificationService.java # Notification service tests
 ├── lib/                            # External Libraries
 │   ├── ojdbc6.jar                  # Oracle JDBC driver
