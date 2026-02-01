@@ -16,6 +16,17 @@ public class AuthService {
 
     /* ===================== REGISTER ===================== */
 
+    /**
+     * Registers a new user in the system
+     * @param email User's email address
+     * @param password User's password
+     * @param role User role (jobseeker/employer)
+     * @param name User's full name
+     * @param phone User's phone number
+     * @param location User's location
+     * @return User object if registration successful, null otherwise
+     * @throws SQLException if database error occurs or email already exists
+     */
     public User register(String email, String password, String role,
                          String name, String phone, String location) throws SQLException {
 
@@ -47,6 +58,13 @@ public class AuthService {
 
     /* ===================== LOGIN ===================== */
 
+    /**
+     * Authenticates user login
+     * @param email User's email address
+     * @param password User's password
+     * @return User object if login successful, null otherwise
+     * @throws SQLException if database error occurs
+     */
     public User login(String email, String password) throws SQLException {
         logger.debug("Login attempt for email: " + email);
 
@@ -64,6 +82,12 @@ public class AuthService {
 
     /* ===================== GET USER ===================== */
 
+    /**
+     * Retrieves user by email address
+     * @param email User's email address
+     * @return User object if found, null otherwise
+     * @throws SQLException if database error occurs
+     */
     public User getUserByEmail(String email) throws SQLException {
         logger.debug("Fetching user by email: " + email);
         return userDAO.getUserByEmail(email);
@@ -71,6 +95,15 @@ public class AuthService {
 
     /* ===================== UPDATE PROFILE ===================== */
 
+    /**
+     * Updates user profile information
+     * @param userId ID of the user
+     * @param name Updated name
+     * @param phone Updated phone number
+     * @param location Updated location
+     * @return true if update successful, false otherwise
+     * @throws SQLException if database error occurs
+     */
     public boolean updateProfile(int userId, String name, String phone, String location) throws SQLException {
         logger.debug("Updating profile for user ID: " + userId);
 
@@ -95,6 +128,14 @@ public class AuthService {
 
     /* ===================== CHANGE PASSWORD ===================== */
 
+    /**
+     * Changes user password after verifying current password
+     * @param userId ID of the user
+     * @param currentPassword Current password for verification
+     * @param newPassword New password to set
+     * @return true if password changed successfully, false otherwise
+     * @throws SQLException if database error occurs
+     */
     public boolean changePassword(int userId, String currentPassword, String newPassword) throws SQLException {
         logger.debug("Change password request for user ID: " + userId);
 
@@ -124,11 +165,25 @@ public class AuthService {
 
     /* ===================== FORGOT PASSWORD ===================== */
 
+    /**
+     * Generates a security question for password recovery
+     * @param userId ID of the user
+     * @return Security question string
+     * @throws SQLException if database error occurs
+     */
     public String generateSecurityQuestion(int userId) throws SQLException {
         logger.debug("Generating security question for user ID: " + userId);
         return "What is your mother's maiden name?";
     }
+    
 
+    /**
+     * Verifies security answer for password recovery
+     * @param userId ID of the user
+     * @param answer User's answer to security question
+     * @return true if answer is valid, false otherwise
+     * @throws SQLException if database error occurs
+     */
     public boolean verifySecurityAnswer(int userId, String answer) throws SQLException {
         logger.debug("Verifying security answer for user ID: " + userId);
 
@@ -142,6 +197,14 @@ public class AuthService {
         return valid;
     }
 
+    
+    /**
+     * Resets user password (forgot password flow)
+     * @param userId ID of the user
+     * @param newPassword New password to set
+     * @return true if password reset successful, false otherwise
+     * @throws SQLException if database error occurs
+     */
     public boolean resetPassword(int userId, String newPassword) throws SQLException {
         logger.debug("Resetting password for user ID: " + userId);
 
@@ -159,6 +222,10 @@ public class AuthService {
 
     /* ===================== TEMP PASSWORD ===================== */
 
+    /**
+     * Generates a temporary password for password recovery
+     * @return Randomly generated 8-character temporary password
+     */
     public String generateTemporaryPassword() {
         logger.debug("Generating temporary password");
 

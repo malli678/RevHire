@@ -12,13 +12,11 @@ public class RevHireApp {
     public static void main(String[] args) {
 
         logger.info("Initializing RevHire Job Portal...");
-        System.out.println("Initializing RevHire Job Portal...");
 
         try {
             // Test database connection
             DBUtil.getConnection();
             logger.info("Database connection successful!");
-            System.out.println("Database connection successful!");
 
             // Start the application
             MainMenu mainMenu = new MainMenu();
@@ -26,11 +24,9 @@ public class RevHireApp {
 
         } catch (Exception e) {
             logger.error("Failed to start RevHire", e);
-            System.out.println("Failed to start RevHire: " + e.getMessage());
         } finally {
             DBUtil.closeConnection();
             logger.info("Application shutdown");
-            System.out.println("\nThank you for using RevHire!");
         }
     }
 }

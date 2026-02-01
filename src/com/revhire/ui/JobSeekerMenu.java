@@ -3,6 +3,8 @@ package com.revhire.ui;
 import com.revhire.model.*;
 import com.revhire.service.JobSeekerService;
 import com.revhire.service.AuthService;
+import com.revhire.service.NotificationService;
+
 import java.sql.SQLException;
 import java.util.List;
 
@@ -522,7 +524,14 @@ public class JobSeekerMenu {
         if (choice == 1) {
             // Mark all as read
             // Implementation depends on your NotificationDAO
-            System.out.println("All notifications marked as read!");
+            //System.out.println("All notifications marked as read!");
+        	NotificationService notificationService = new NotificationService();
+            boolean markedAll = notificationService.markAllAsRead(user.getId());
+            if (markedAll) {
+                System.out.println("All notifications marked as read!");
+            } else {
+                System.out.println("Failed to mark notifications as read!");
+            }
         }
         
         ConsoleUtils.pressEnterToContinue();

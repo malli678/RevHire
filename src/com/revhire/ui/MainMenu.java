@@ -185,7 +185,6 @@ public class MainMenu {
         String email = ConsoleUtils.readEmail("Email: ");
         String password = ConsoleUtils.readPassword("Password: ");
         
-        System.out.println("\nAuthenticating user...");
         
         try {
             User user = authService.login(email, password);

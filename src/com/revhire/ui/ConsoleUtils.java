@@ -7,12 +7,12 @@ import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class ConsoleUtils {
-    private static Scanner scanner = new Scanner(System.in);
+	private static Scanner scanner = new Scanner(System.in);
     private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     
     // Make these public for testing
     public static final Pattern EMAIL_PATTERN = 
-        Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+        Pattern.compile("^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$");
     
     public static final Pattern PHONE_PATTERN = 
         Pattern.compile("^[0-9]{10}$");

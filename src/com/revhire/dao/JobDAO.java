@@ -314,19 +314,44 @@ public class JobDAO {
         }
     }
 
+    /**
+     * Deletes a job and all its applications (cascade delete)
+     * @param jobId The ID of the job to delete
+     * @return true if deleted successfully, false otherwise
+     * @throws SQLException if database error occurs
+     */
     public boolean deleteJob(int jobId) throws SQLException {
-        String sql = "DELETE FROM jobs WHERE id = ?";
         Connection conn = null;
         PreparedStatement ps = null;
+        PreparedStatement ps2 = null;
         
         try {
             conn = DBUtil.getConnection();
-            ps = conn.prepareStatement(sql);
+            
+            // First delete all applications for this job
+            String deleteAppsSql = "DELETE FROM applications WHERE job_id = ?";
+            ps = conn.prepareStatement(deleteAppsSql);
             ps.setInt(1, jobId);
-            return ps.executeUpdate() > 0;
+            ps.executeUpdate();
+            
+            // Close first statement
+            ps.close();
+            ps = null;
+            
+            // Then delete the job
+            String deleteJobSql = "DELETE FROM jobs WHERE id = ?";
+            ps2 = conn.prepareStatement(deleteJobSql);
+            ps2.setInt(1, jobId);
+            int affectedRows = ps2.executeUpdate();
+            
+            return affectedRows > 0;
         } finally {
-        	if (ps != null) {
+            // Close all resources
+            if (ps != null) {
                 try { ps.close(); } catch (SQLException e) { e.printStackTrace(); }
+            }
+            if (ps2 != null) {
+                try { ps2.close(); } catch (SQLException e) { e.printStackTrace(); }
             }
             if (conn != null) {
                 try { conn.close(); } catch (SQLException e) { e.printStackTrace(); }

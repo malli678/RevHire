@@ -6,7 +6,13 @@ import java.sql.*;
 
 public class JobSeekerDAO {
     
-    public boolean registerJobSeeker(JobSeeker jobSeeker) throws SQLException {
+	/**
+     * Registers a new job seeker in the database
+     * @param jobSeeker JobSeeker object containing registration details
+     * @return true if registration successful, false otherwise
+     * @throws SQLException if database error occurs
+     */
+	public boolean registerJobSeeker(JobSeeker jobSeeker) throws SQLException {
         String sql = "INSERT INTO jobseekers (user_id, objective, skills, certifications) VALUES (?, ?, ?, ?)";
         Connection conn = null;
         PreparedStatement ps = null;
@@ -31,7 +37,13 @@ public class JobSeekerDAO {
         }
     }
     
-    public JobSeeker getJobSeekerByUserId(int userId) throws SQLException {
+	/**
+     * Retrieves job seeker by user ID
+     * @param userId The user ID of the job seeker
+     * @return JobSeeker object if found, null otherwise
+     * @throws SQLException if database error occurs
+     */
+	public JobSeeker getJobSeekerByUserId(int userId) throws SQLException {
         String sql = "SELECT * FROM jobseekers WHERE user_id = ?";
         Connection conn = null;
         PreparedStatement ps = null;
@@ -65,7 +77,13 @@ public class JobSeekerDAO {
         return null;
     }
     
-    public boolean updateJobSeeker(JobSeeker jobSeeker) throws SQLException {
+	/**
+     * Updates job seeker profile information
+     * @param jobSeeker JobSeeker object with updated information
+     * @return true if update successful, false otherwise
+     * @throws SQLException if database error occurs
+     */
+	public boolean updateJobSeeker(JobSeeker jobSeeker) throws SQLException {
         String sql = "UPDATE jobseekers SET objective = ?, skills = ?, certifications = ? WHERE user_id = ?";
         Connection conn = null;
         PreparedStatement ps = null;

@@ -12,11 +12,14 @@ import java.util.Map;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 
+import com.revhire.dao.NotificationDAO;
+
 public class EmployerMenu {
     private EmployerService service;
     private AuthService authService;
     private User user;
     private Employer profile;
+    
 
     public EmployerMenu(EmployerService service, User user) {
         this.service = service;
@@ -305,10 +308,24 @@ public class EmployerMenu {
         System.out.println("Job Title: " + job.getTitle());
         System.out.println("Applications: " + service.getApplicationsForJob(job.getId()).size());
         
-        String confirm = ConsoleUtils.readString("\nType 'DELETE' to confirm: ");
-        if ("DELETE".equals(confirm)) {
-            System.out.println("\n>> NOTE: Job delete feature requires deleteJob method in JobDAO");
-            System.out.println("Job would be deleted from database.");
+        System.out.print("\nAre you sure you want to delete this job? (y/n): ");
+        String confirm = ConsoleUtils.readString("");
+        
+        if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
+            System.out.print("Type 'DELETE' to confirm: ");
+            String finalConfirm = ConsoleUtils.readString("");
+            
+            if ("DELETE".equals(finalConfirm)) {
+                boolean success = service.deleteJob(job.getId());
+                if (success) {
+                    System.out.println("\nJob deleted successfully!");
+                    service.sendNotification(user.getId(), "Job deleted: " + job.getTitle());
+                } else {
+                    System.out.println("\nFailed to delete job!");
+                }
+            } else {
+                System.out.println("\nDelete cancelled. Wrong confirmation word.");
+            }
         } else {
             System.out.println("\nDelete cancelled.");
         }
@@ -884,12 +901,120 @@ public class EmployerMenu {
             return;
         }
         
-        System.out.println("Total Notifications: " + notifications.size());
-        printLine(80);
+        // Count unread notifications
+        int unreadCount = service.getUnreadNotificationCount(user.getId());
         
-        for (Notification notification : notifications) {
+        System.out.println("Total Notifications: " + notifications.size() + " (" + unreadCount + " unread)");
+        ConsoleUtils.printLine(80);
+        
+        // Display all notifications with numbering
+        for (int i = 0; i < notifications.size(); i++) {
+            Notification notification = notifications.get(i);
             String readStatus = notification.getIsRead() == 1 ? "[Read]" : "[NEW]";
-            System.out.println(readStatus + " " + notification.getCreatedAt() + ": " + notification.getMessage());
+            System.out.println((i+1) + ". " + readStatus + " " + notification.getCreatedAt() + ": " + notification.getMessage());
+        }
+        
+        ConsoleUtils.printLine(80);
+        
+        // Show action menu
+        System.out.println("\nActions:");
+        System.out.println("1. Mark all as read");
+        System.out.println("2. Mark a specific notification as read");
+        System.out.println("3. Delete a notification");
+        System.out.println("4. Refresh");
+        System.out.println("5. Back to dashboard");
+        
+        int action = ConsoleUtils.readInt("\nEnter action: ");
+        
+        // Create ONE NotificationDAO instance outside the switch
+        NotificationDAO notificationDAO = new NotificationDAO();
+        
+        switch (action) {
+        case 1: // Mark all as read
+            try {
+                // Collect all unread notification IDs
+                List<Integer> unreadIds = new ArrayList<Integer>();
+                for (Notification notification : notifications) {
+                    if (notification.getIsRead() == 0) {
+                        unreadIds.add(notification.getId());
+                    }
+                }
+                
+                if (!unreadIds.isEmpty()) {
+                    // Use batch update
+                    int markedCount = notificationDAO.markMultipleAsRead(unreadIds);
+                    System.out.println(markedCount + " notifications marked as read.");
+                } else {
+                    System.out.println("No unread notifications to mark.");
+                }
+            } catch (SQLException e) {
+                System.out.println("Error marking notifications as read: " + e.getMessage());
+            }
+            break;
+                
+            case 2: // Mark specific as read
+                int noteNumber = ConsoleUtils.readInt("Enter notification number to mark as read: ");
+                if (noteNumber > 0 && noteNumber <= notifications.size()) {
+                    Notification selected = notifications.get(noteNumber - 1);
+                    if (selected.getIsRead() == 0) {
+                        try {
+                            notificationDAO.markAsRead(selected.getId());
+                            System.out.println("Notification marked as read.");
+                        } catch (SQLException e) {
+                            System.out.println("Error: " + e.getMessage());
+                        }
+                    } else {
+                        System.out.println("Notification is already read.");
+                    }
+                } else {
+                    System.out.println("Invalid notification number.");
+                }
+                break;
+                
+            case 3: // Delete specific
+                int deleteNumber = ConsoleUtils.readInt("Enter notification number to delete: ");
+                if (deleteNumber > 0 && deleteNumber <= notifications.size()) {
+                    Notification toDelete = notifications.get(deleteNumber - 1);
+                    System.out.print("Are you sure you want to delete this notification? (y/n): ");
+                    // Simple input
+                    String confirm = "";
+                    try {
+                        java.io.BufferedReader reader = new java.io.BufferedReader(
+                            new java.io.InputStreamReader(System.in));
+                        confirm = reader.readLine().trim().toLowerCase();
+                    } catch (Exception e) {
+                        confirm = "n";
+                    }
+                    if (confirm.equals("y") || confirm.equals("yes")) {
+                        try {
+                            notificationDAO.deleteNotification(toDelete.getId());
+                            System.out.println("Notification deleted.");
+                        } catch (SQLException e) {
+                            System.out.println("Error deleting notification: " + e.getMessage());
+                        }
+                    }
+                } else {
+                    System.out.println("Invalid notification number.");
+                }
+                break;
+                
+            case 4: // Refresh
+                // Will show again on next loop
+                break;
+                
+            case 5: // Back
+                return;
+                
+            default:
+                System.out.println("Invalid option.");
+        }
+        
+        // IMPORTANT: Close the DAO connection when done
+        try {
+            // If your DAO has a close method, call it here
+            // Or rely on the finally block in each DAO method
+        } catch (Exception e) {
+            // Ignore
         }
         
         ConsoleUtils.pressEnterToContinue();
