@@ -1,12 +1,13 @@
 # RevHire - Job Portal Console Application
 
 ## 📋 Project Overview
-**RevHire** is a comprehensive console-based job portal application that connects job seekers with employers. Built with Java 1.7, Oracle SQL, and following MVC architecture, this application demonstrates enterprise-level software development practices.
+**RevHire** is a comprehensive **console-based job portal application** that connects job seekers with employers. It enables job seekers to create profiles, build resumes, search and apply for jobs, and track application statuses. Employers can post jobs, manage applications, shortlist or reject candidates (including bulk actions), and maintain company profiles.
+
+The application is built using **Java 1.7**, **Oracle SQL**, and follows a **layered MVC architecture**, demonstrating enterprise-level software development practices. The design is modular and extensible, with future plans to migrate to a web-based microservices architecture.
 
 **Trainee:** Mallikarjun Mandava  
 **Trainer:** Geetha S  
 **Batch:** 2354  
-**Submission Date:** January 2024
 
 ---
 
@@ -28,15 +29,17 @@
 - ✅ **Login System** - Secure authentication for employers
 - ✅ **Job Postings** - Create comprehensive job listings
 - ✅ **Job Management** - View, edit, close/reopen, delete jobs
+- ✅ **Job Statistics** – View number of applications per job
 - ✅ **Applicant Management** - View applicant details with resumes
 - ✅ **Application Processing** - Shortlist/Reject with comments
-- ✅ **Applicant Search** - Filter by experience, skills, education
+- ✅ **Applicant Search & Filters** - Filter by experience, skills, education, application date
 - ✅ **Company Profile** - Update company information
 
 ### Common Features
 - ✅ **Change Password** - Secure password update with current password verification
 - ✅ **Forgot Password** - Recovery through security questions
 - ✅ **Profile Completion Tracking** - Percentage-based completion indicator
+- ✅ **Role-Based Access Control** – Separate flows for job seekers and employers
 
 ---
 
@@ -49,6 +52,18 @@
 - **Testing:** JUnit 4
 - **Logging:** Log4J 1.2.17
 - **Build Tool:** Eclipse IDE
+
+### Architecture Diagram
+
+The application follows a layered architecture consisting of:
+
+* **Presentation Layer** – Console-based UI menus
+* **Service Layer** – Business logic and validations
+* **DAO Layer** – Database operations using JDBC
+* **Database Layer** – Oracle SQL tables and sequences
+
+An **application architecture diagram** is included in the repository documentation to illustrate component interactions.
+
 
 ### Project Structure
 ```
@@ -79,15 +94,15 @@ RevHire/
 │   │   ├── JobSeekerMenu.java      # Job seeker dashboard
 │   │   ├── EmployerMenu.java       # Employer dashboard
 │   │   └── ConsoleUtils.java       # Console utilities
-│   └── com.revhire.util/           # Utilities
-│       ├── DBUtil.java             # Database connection
-│       ├── PasswordUtil.java       # Password hashing
-│       └── LoggerUtil.java         # Log4J wrapper
-├── test/                           # Test Code
+│   ├──com.revhire.util/           # Utilities
+│   |   ├── DBUtil.java             # Database connection
+│   |   ├── PasswordUtil.java       # Password hashing
+│   |   └── LoggerUtil.java         # Log4J wrapper
 │   └── com.revhire.test/           # JUnit Tests
-│       ├── TestPasswordUtil.java   # Password utility tests
-│       ├── TestConsoleUtils.java   # Console utility tests
-│       └── TestAuthService.java    # Authentication service tests
+│       ├── PasswordUtilTest.java   # Password utility tests
+│       ├── UserDAOTest.java        # User DAO tests
+│       └── AuthServiceTest.java    # Authentication service tests
+│       └── NotificationService.java # Notification service tests
 ├── lib/                            # External Libraries
 │   ├── ojdbc6.jar                  # Oracle JDBC driver
 │   ├── log4j-1.2.17.jar           # Logging framework
