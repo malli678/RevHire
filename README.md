@@ -127,6 +127,7 @@ RevHire/
 ## 🗄️ Database Design
 
 ### Entity Relationship Diagram
+![Entity Relationship Diagram](docs/ER_Diagram.png)
 ```
 ┌─────────────┐      ┌──────────────┐      ┌─────────────┐
 │    USERS    │      │  JOBSEEKERS  │      │   RESUMES   │
